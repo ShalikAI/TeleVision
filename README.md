@@ -46,7 +46,13 @@ pip3 install -e .
 ## Teleoperation Guide
 
 ### Local streaming
-For **Quest** local streaming, follow [this](https://github.com/OpenTeleVision/TeleVision/issues/12#issue-2401541144) issue.
+For **Quest** local streaming, we will use adb (Android Debug Bridge):
+```
+sudo apt install -y adb
+adb version
+sudo apt install -y android-sdk-platform-tools-common
+sudo usermod -aG plugdev $USER
+```
 
 **Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the VisionPro and the ubuntu machine to the same router. 
 1. install mkcert: https://github.com/FiloSottile/mkcert
