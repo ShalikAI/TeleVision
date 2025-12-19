@@ -18,7 +18,7 @@ cd TeleVision
 ## Installation
 Activate conda environment and install packages:
 ```bash
-source ~/miniconda/bin/activate
+source ~/miniconda3/bin/activate
 conda create -n tv python=3.8
 conda activate tv
 pip install -r requirements.txt
