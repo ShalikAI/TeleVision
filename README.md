@@ -3,55 +3,41 @@
 Immersive Active Visual Feedback</h1>
 
 <p align="center">
-    <a href="https://chengxuxin.github.io/"><strong>Xuxin Cheng*</strong></a>
-    ·
-    <a href=""><strong>Jialong Li*</strong></a>
-    ·
-    <a href="https://aaronyang1223.github.io/"><strong>Shiqi Yang</strong></a>
-    <br>
-    <a href="https://www.episodeyang.com/"><strong>Ge Yang</strong></a>
-    ·
-    <a href="https://xiaolonw.github.io/"><strong>Xiaolong Wang</strong></a>
-</p>
-
-<p align="center">
-    <img src="img/UCSanDiegoLogo-BlueGold.png" height=50"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-    <img src="img/mit-logo.png" height="50">
-</p>
-
-<h3 align="center"> CoRL 2024 </h3>
-
-<p align="center">
-<h3 align="center"><a href="https://robot-tv.github.io/">Website</a> | <a href="https://arxiv.org/abs/2407.01512/">arXiv</a> | <a href="">Video</a> | <a href="">Summary</a> </h3>
-  <div align="center"></div>
-</p>
-
-<p align="center">
 <img src="./img/main.webp" width="80%"/>
 </p>
 
 ## Introduction
 This code contains implementation for teleoperation and imitation learning of Open-TeleVision.
 
-## Installation
+## Clone the repo
+```
+git clone https://github.com/ShalikAI/TeleVision.git
+cd TeleVision
+```
 
+## Installation
+Activate conda environment and install packages:
 ```bash
-    conda create -n tv python=3.8
-    conda activate tv
-    pip install -r requirements.txt
-    cd act/detr && pip install -e .
+source ~/miniconda/bin/activate
+conda create -n tv python=3.8
+conda activate tv
+pip install -r requirements.txt
+cd act/detr && pip install -e .
 ```
 
 Install ZED sdk: https://www.stereolabs.com/developers/release/
 
 Install ZED Python API:
 ```
-    cd /usr/local/zed/ && python get_python_api.py
+cd /usr/local/zed/ && python get_python_api.py
 ```
 
-If you want to try teleoperation example in a simulated environment (teleop_hand.py):
-
-Install Isaac Gym: https://developer.nvidia.com/isaac-gym/
+Install Isaac Gym for Teleoperation in Simulated Environment: 
+Download the Isaac Gym Preview 4 release from the [website](https://developer.nvidia.com/isaac-gym). Extract the zip file and copy the folder `isaacgym` inside `TeleVision`. Go inside `TeleVision`:
+```
+cd ~/TeleVision/isaacgym/python/
+pip3 install -e .
+```
 
 ## Teleoperation Guide
 
@@ -63,35 +49,35 @@ For **Quest** local streaming, follow [this](https://github.com/OpenTeleVision/T
 2. check local ip address: 
 
 ```
-    ifconfig | grep inet
+ifconfig | grep inet
 ```
 Suppose the local ip address of the ubuntu machine is `192.168.8.102`.
 
 3. create certificate: 
 
 ```
-    mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.8.102 localhost 127.0.0.1
+mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.8.102 localhost 127.0.0.1
 ```
 ps. place the generated `cert.pem` and `key.pem` files in `teleop`.
 
 4. open firewall on server
 ```
-    sudo iptables -A INPUT -p tcp --dport 8012 -j ACCEPT
-    sudo iptables-save
-    sudo iptables -L
+sudo iptables -A INPUT -p tcp --dport 8012 -j ACCEPT
+sudo iptables-save
+sudo iptables -L
 ```
 or can be done with `ufw`:
 ```
-    sudo ufw allow 8012
+sudo ufw allow 8012
 ```
 5.
 ```
-    tv = OpenTeleVision(self.resolution_cropped, shm.name, image_queue, toggle_streaming, ngrok=False)
+tv = OpenTeleVision(self.resolution_cropped, shm.name, image_queue, toggle_streaming, ngrok=False)
 ```
 
 6. install ca-certificates on VisionPro
 ```
-    mkcert -CAROOT
+mkcert -CAROOT
 ```
 Copy the rootCA.pem via AirDrop to VisionPro and install it.
 
@@ -109,19 +95,19 @@ For Meta Quest3, installation of the certificate is not trivial. We need to use 
 1. Install ngrok: https://ngrok.com/download
 2. Run ngrok
 ```
-    ngrok http 8012
+ngrok http 8012
 ```
 3. Copy the https address and open the browser on Meta Quest3 and go to the address.
 
 ps. When using ngrok for network streaming, remember to call `OpenTeleVision` with:
 ```
-    self.tv = OpenTeleVision(self.resolution_cropped, self.shm.name, image_queue, toggle_streaming, ngrok=True)
+self.tv = OpenTeleVision(self.resolution_cropped, self.shm.name, image_queue, toggle_streaming, ngrok=True)
 ```
 
 ### Simulation Teleoperation Example
 1. After setup up streaming with either local or network streaming following the above instructions, you can try teleoperating two robot hands in Issac Gym:
 ```
-    cd teleop && python teleop_hand.py
+cd teleop && python teleop_hand.py
 ```
 2. Go to your vuer site on VisionPro, click `Enter VR` and ``Allow`` to enter immersive environment.
 
@@ -139,26 +125,16 @@ ps. When using ngrok for network streaming, remember to call `OpenTeleVision` wi
 
 5. To train ACT, run:
 ```
-    python imitate_episodes.py --policy_class ACT --kl_weight 10 --chunk_size 60 --hidden_dim 512 --batch_size 45 --dim_feedforward 3200 --num_epochs 50000 --lr 5e-5 --seed 0 --taskid 00 --exptid 01-sample-expt
+python imitate_episodes.py --policy_class ACT --kl_weight 10 --chunk_size 60 --hidden_dim 512 --batch_size 45 --dim_feedforward 3200 --num_epochs 50000 --lr 5e-5 --seed 0 --taskid 00 --exptid 01-sample-expt
 ```
 
 6. After training, save jit for the desired checkpoint:
 ```
-    python imitate_episodes.py --policy_class ACT --kl_weight 10 --chunk_size 60 --hidden_dim 512 --batch_size 45 --dim_feedforward 3200 --num_epochs 50000 --lr 5e-5 --seed 0 --taskid 00 --exptid 01-sample-expt\
+python imitate_episodes.py --policy_class ACT --kl_weight 10 --chunk_size 60 --hidden_dim 512 --batch_size 45 --dim_feedforward 3200 --num_epochs 50000 --lr 5e-5 --seed 0 --taskid 00 --exptid 01-sample-expt\
                                --save_jit --resume_ckpt 25000
 ```
 
 7. You can visualize the trained policy with inputs from dataset using ``scripts/deploy_sim.py``, example usage:
 ```
-    python deploy_sim.py --taskid 00 --exptid 01 --resume_ckpt 25000
-```
-
-## Citation
-```
-@article{cheng2024tv,
-title={Open-TeleVision: Teleoperation with Immersive Active Visual Feedback},
-author={Cheng, Xuxin and Li, Jialong and Yang, Shiqi and Yang, Ge and Wang, Xiaolong},
-journal={arXiv preprint arXiv:2407.01512},
-year={2024}
-}
+python deploy_sim.py --taskid 00 --exptid 01 --resume_ckpt 25000
 ```
