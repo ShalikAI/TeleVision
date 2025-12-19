@@ -21,20 +21,24 @@ Activate conda environment and install packages:
 source ~/miniconda3/bin/activate
 conda create -n tv python=3.8
 conda activate tv
-pip install -r requirements.txt
-cd act/detr && pip install -e .
+conda install -c conda-forge av ffmpeg
+# pip3 install -r requirements.txt
+pip3 install -r requirements.txt --no-deps
+cd act/detr 
+pip3 install -e .
 ```
 
 Install ZED sdk: https://www.stereolabs.com/developers/release/
 
 Install ZED Python API:
-```
-cd /usr/local/zed/ && python get_python_api.py
+```bash
+cd /usr/local/zed/ 
+python3 get_python_api.py
 ```
 
 Install Isaac Gym for Teleoperation in Simulated Environment: 
 Download the Isaac Gym Preview 4 release from the [website](https://developer.nvidia.com/isaac-gym). Extract the zip file and copy the folder `isaacgym` inside `TeleVision`. Go inside `TeleVision`:
-```
+```bash
 cd ~/TeleVision/isaacgym/python/
 pip3 install -e .
 ```
