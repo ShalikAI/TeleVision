@@ -47,12 +47,59 @@ pip3 install -e .
 
 ### Local streaming
 For **Quest** local streaming, we will use adb (Android Debug Bridge):
-```
-sudo apt install -y adb
-adb version
-sudo apt install -y android-sdk-platform-tools-common
+
+```bash
+sudo apt install -y adb android-sdk-platform-tools-common
 sudo usermod -aG plugdev $USER
+# log out & log back in
 ```
+
+Plug in Quest 3 and verify USB:
+
+```bash
+lsusb | grep -i oculus
+```
+
+Add udev rule:
+
+```bash
+sudo tee /etc/udev/rules.d/51-android.rules > /dev/null <<'EOF'
+SUBSYSTEM=="usb", ATTR{idVendor}=="2833", ATTR{idProduct}=="0186", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+EOF
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+Restart adb:
+
+```bash
+adb kill-server
+adb start-server
+adb devices
+```
+
+If device shows `unauthorized`:
+
+1. Enable **Developer Mode** (Meta phone app)
+2. On Quest: **Settings → Advanced → Developer → USB debugging ON**
+3. Restart the Quest and Unplug and Replug USB C 
+4. Accept **“Allow USB debugging?”** inside headset 
+5. If needed:
+
+```bash
+rm -f ~/.android/adbkey ~/.android/adbkey.pub
+adb kill-server
+adb start-server
+```
+
+Success:
+
+```text
+<device-id>   device
+```
+
+⚠️ **Note:** File transfer (MTP) working ≠ ADB authorized.
+
 
 **Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the VisionPro and the ubuntu machine to the same router. 
 1. install mkcert: https://github.com/FiloSottile/mkcert
