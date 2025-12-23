@@ -47,63 +47,37 @@ pip3 install -e .
 
 ### Local streaming
 For **Quest** local streaming, we will use adb (Android Debug Bridge):
-
-```bash
-sudo apt install -y adb android-sdk-platform-tools-common
+```
+sudo apt install -y adb
+adb version
+sudo apt install -y android-sdk-platform-tools-common
 sudo usermod -aG plugdev $USER
-# log out & log back in
 ```
-
-Plug in Quest 3 and verify USB:
-
-```bash
-lsusb | grep -i oculus
+Use the adb reverse tool to set tcp port:
 ```
-
-Add udev rule:
-
-```bash
-sudo tee /etc/udev/rules.d/51-android.rules > /dev/null <<'EOF'
-SUBSYSTEM=="usb", ATTR{idVendor}=="2833", ATTR{idProduct}=="0186", MODE="0660", GROUP="plugdev", TAG+="uaccess"
-EOF
-sudo udevadm control --reload-rules
-sudo udevadm trigger
+adb reverse tcp:8012 tcp:8012
 ```
-
-Restart adb:
-
-```bash
-adb kill-server
-adb start-server
-adb devices
+Then, do a `adb reverse --list` to verify:
 ```
-
-If device shows `unauthorized`:
-
-1. Enable **Developer Mode** (Meta phone app)
-2. On Quest: **Settings → Advanced → Developer → USB debugging ON**
-3. Restart the Quest and Unplug and Replug USB C 
-4. Accept **“Allow USB debugging?”** inside headset 
-5. If needed:
-
-```bash
-rm -f ~/.android/adbkey ~/.android/adbkey.pub
-adb kill-server
-adb start-server
+adb reverse --list
 ```
+See the hand in action in vuer site (https://vuer.ai?grid=False):
 
-Success:
+<div align="center">
+    <a href="https://www.youtube.com/shorts/SqhlbrGsM8M">
+        <img src="img/vuer_vr.gif" width="700">
+    </a>  
+</div>
 
-```text
-<device-id>   device
+To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the Quest3 and the ubuntu machine to the same router through WiFi. 
+1. install [mkcert](https://github.com/FiloSottile/mkcert):
 ```
-
-⚠️ **Note:** File transfer (MTP) working ≠ ADB authorized.
-
-
-**Apple** does not allow WebXR on non-https connections. To test the application locally, we need to create a self-signed certificate and install it on the client. You need a ubuntu machine and a router. Connect the VisionPro and the ubuntu machine to the same router. 
-1. install mkcert: https://github.com/FiloSottile/mkcert
-2. check local ip address: 
+wget https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64
+chmod +x mkcert-v1.4.4-linux-amd64
+sudo mv mkcert-v1.4.4-linux-amd64 /usr/local/bin/mkcert
+mkcert -version
+```
+2. Check local ip address: 
 
 ```
 ifconfig | grep inet
@@ -113,9 +87,10 @@ Suppose the local ip address of the ubuntu machine is `192.168.8.102`.
 3. create certificate: 
 
 ```
+cd TeleVision/teleop
 mkcert -install && mkcert -cert-file cert.pem -key-file key.pem 192.168.8.102 localhost 127.0.0.1
 ```
-ps. place the generated `cert.pem` and `key.pem` files in `teleop`.
+ps. `cert.pem` and `key.pem` files should be generated/moved in `Television/teleop`.
 
 4. open firewall on server
 ```
@@ -132,33 +107,54 @@ sudo ufw allow 8012
 tv = OpenTeleVision(self.resolution_cropped, shm.name, image_queue, toggle_streaming, ngrok=False)
 ```
 
-6. install ca-certificates on VisionPro
-```
-mkcert -CAROOT
-```
-Copy the rootCA.pem via AirDrop to VisionPro and install it.
-
 Settings > General > About > Certificate Trust Settings. Under "Enable full trust for root certificates", turn on trust for the certificate.
 
-settings > Apps > Safari > Advanced > Feature Flags > Enable WebXR Related Features
-
-7. open the browser on Safari on VisionPro and go to `https://192.168.8.102:8012?ws=wss://192.168.8.102:8012`
+7. Open the browser on Quest 3 and go to `https://192.168.8.102:8012?ws=wss://192.168.8.102:8012`
 
 8. Click `Enter VR` and ``Allow`` to start the VR session.
 
-### Network Streaming
-For Meta Quest3, installation of the certificate is not trivial. We need to use a network streaming solution. We use `ngrok` to create a secure tunnel to the server. This method will work for both VisionPro and Meta Quest3.
 
-1. Install ngrok: https://ngrok.com/download
-2. Run ngrok
+### Network Streaming
+For Meta Quest3, installation of the certificate is not trivial. We need to use a network streaming solution. We use `ngrok` to create a secure tunnel to the server.
+
+1. Install [ngrok](https://ngrok.com/download):
+```
+curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+  && echo "deb https://ngrok-agent.s3.amazonaws.com bookworm main" \
+  | sudo tee /etc/apt/sources.list.d/ngrok.list \
+  && sudo apt update \
+  && sudo apt install ngrok
+```
+2. Add the authentication token:
+```
+ngrok config add-authtoken <authentication_token>
+```
+For first time, you have to generate the authentication token by opening an account in ngrok and signing up for 2FA. From next time, you will find the authentication token inside `/home/arghya/.config/ngrok/ngrok.yml`. 
+3. Run ngrok:
 ```
 ngrok http 8012
 ```
-3. Copy the https address and open the browser on Meta Quest3 and go to the address.
+4. Copy the https address (https://unenthralling-nonunited-thomas.ngrok-free.dev) and open the browser on Meta Quest3 and go to the address. You can also open `http://127.0.0.1:4040` or `http://localhost:8012` to see the same thing in your ubuntu pc. 
 
 ps. When using ngrok for network streaming, remember to call `OpenTeleVision` with:
 ```
 self.tv = OpenTeleVision(self.resolution_cropped, self.shm.name, image_queue, toggle_streaming, ngrok=True)
+```
+
+### Copy Files 
+You can record the VR Streaming and copy files from Occulus Quest. List the adb devices:
+```
+adb devices
+```
+List the files inside the SD card of Occulus Quest 3:
+```
+adb shell ls /sdcard/Oculus/Screenshots
+adb shell ls /sdcard/Oculus/VideoShots
+```
+Copy the necessary files:
+```
+adb pull /sdcard/Oculus/VideoShots/<file_name>.mp4 .
 ```
 
 ### Simulation Teleoperation Example
@@ -166,10 +162,28 @@ self.tv = OpenTeleVision(self.resolution_cropped, self.shm.name, image_queue, to
 ```
 cd teleop && python teleop_hand.py
 ```
-2. Go to your vuer site on VisionPro, click `Enter VR` and ``Allow`` to enter immersive environment.
+2. Confirm your Vuer server is actually on 8012:
+```
+sudo lsof -iTCP:8012 -sTCP:LISTEN -n -P
+```
+You should see which process is listening on 8012.
+3. Go to the local site (https://localhost:8012/) and see the hands in action:
 
-3. See your hands in 3D!
-<img src=img/sim.png>
+<div align="center">
+    <a href="https://www.youtube.com/shorts/ZQiJDCjlNwc">
+        <img src="img/localhost_vr.gif" width="700">
+    </a>  
+</div>
+
+4. Go to vuer site (https://localhost:8012/?ws=wss://localhost:8012) on Quest 3 for local streaming or ngrok site (https://unenthralling-nonunited-thomas.ngrok-free.dev) for network streaming, click `Enter VR` and ``Allow`` to enter immersive environment.
+
+5. See hands in 3D inside isaac gym:
+
+<div align="center">
+    <a href="https://www.youtube.com/watch?v=Dj490QL5inE">
+        <img src="img/vr.gif" width="700">
+    </a>  
+</div>
 
 ## Training Guide
 1. Download dataset from https://drive.google.com/drive/folders/11WO96mUMjmxRo9Hpvm4ADz7THuuGNEMY?usp=sharing.
