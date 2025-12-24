@@ -236,7 +236,7 @@ python deploy_sim.py --taskid 00 --exptid 01 --resume_ckpt 25000
 
 After expansion, full h1 robot qpos = 51 DOF 
 
-### Observation State
+### Observation State (inputs to the policy)
 A) Joint Positions `qpos` → **observation state**
 
 From `imitate_episodes.py` and `utils.load_data()`:
