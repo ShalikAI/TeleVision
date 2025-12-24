@@ -195,7 +195,7 @@ You should see which process is listening on 8012.
 </div>
 
 ## Training Guide
-1. Download dataset from https://drive.google.com/drive/folders/11WO96mUMjmxRo9Hpvm4ADz7THuuGNEMY?usp=sharing. There are in total 5 datasets namely `00-can-sorting`, `01-can-insertion`, `02-folding`, `03-unloading`, and `04-gr1-can-sorting`.
+1. Download dataset from [here](https://drive.google.com/drive/folders/11WO96mUMjmxRo9Hpvm4ADz7THuuGNEMY?usp=sharing). There are in total 5 datasets namely `00-can-sorting`, `01-can-insertion`, `02-folding`, `03-unloading`, and `04-gr1-can-sorting`.
 
 2. Place the downloaded dataset in ``data/recordings/``. Each dataset contains observation states of multiple zed `svo` (left and right image pair) and corresponding `hdf5` (action sequences/joint positions) as episodes. 
 
