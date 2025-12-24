@@ -3,7 +3,7 @@
 Backbone modules.
 """
 from collections import OrderedDict
-
+import os
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -98,7 +98,10 @@ class Backbone(BackboneBase):
 class DINOv2BackBone(nn.Module):
     def __init__(self) -> None:
         super().__init__()
-        self.body = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+        # self.body = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
+        DINOV2_PATH = os.path.join(os.path.dirname(__file__), "../../../dinov2")
+        self.body = torch.hub.load(DINOV2_PATH, 'dinov2_vits14', source="local", force_reload=True,)
+
         self.body.eval()
         self.num_channels = 384
     

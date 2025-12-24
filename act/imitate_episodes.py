@@ -113,7 +113,7 @@ def main(args):
         'exptid': args['exptid'],
     }
     mode = "disabled" if args["no_wandb"] or args["save_jit"] else "online"
-    wandb.init(project="television", name=args['exptid'], group=task_name, entity="cxx", mode=mode, dir="../data/logs")
+    wandb.init(project="television", name=args['exptid'], group=task_name, mode=mode, dir="../data/logs")
     wandb.config.update(config)
     train_dataloader, val_dataloader, stats, _ = load_data(dataset_dir, camera_names, batch_size_train, batch_size_val)
 
